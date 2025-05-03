@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Top 10 Criptomoedas</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Animação de fade + scale para os cards */
+    .fade-in {
+      opacity: 0;
+      transform: scale(0.95);
+      animation: fadeInAnimation 0.6s ease-in-out forwards;
+    }
+
+    @keyframes fadeInAnimation {
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-gray-900 text-white min-h-screen flex flex-col items-center p-4">
+
+  <!-- Bloco de Título + Botão -->
+  <div class="bg-gray-800 rounded-lg shadow-lg p-6 mb-8 flex flex-col items-center w-full max-w-5xl">
+    <h1 class="text-3xl font-bold mb-4 text-center">Top 10 Criptomoedas</h1>
+    <button id="updateBtn" class="bg-blue-500 text-white py-2 px-4 rounded-md transition duration-300 ease-in-out hover:bg-blue-600 hover:scale-105">
+      Atualizar Dados
+    </button>
+    <div id="updateStatus" class="text-green-400 text-sm mt-2 hidden">Dados atualizados com sucesso!</div>
+  </div>
+
+  <!-- Grid de Cards -->
+  <div id="crypto-cards" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 w-full max-w-5xl">
+    <!-- Os cards das moedas serão inseridos aqui via JavaScript -->
+  </div>
+
+  <script>
+    const apiUrl = 'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=10&page=1&sparkline=false&price_change_percentage=24h';
+
+    async function fetchCryptoData() {
+      try {
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+        displayCryptoData(data);
+        showUpdateStatus();
+      } catch (error) {
+        console.error('Erro ao buscar dados das criptomoedas:', error);
+      }
+    }
+
+    function displayCryptoData(cryptos) {
+      const cryptoCards = document.getElementById('crypto-cards');
+      cryptoCards.innerHTML = '';
+
+      cryptos.forEach((crypto, index) => {
+        const priceChange = crypto.price_change_percentage_24h;
+        const priceChangeClass = priceChange >= 0 ? 'text-green-400' : 'text-red-400';
+
+        const card = document.createElement('div');
+        card.className = `
+          bg-gray-800 p-6 rounded-lg shadow-md flex flex-col items-center 
+          transform transition duration-300 hover:scale-105 hover:shadow-xl fade-in
+        `;
+        card.style.animationDelay = `${index * 0.1}s`; // atraso para efeito cascata
+
+        card.innerHTML = `
+          <img src="${crypto.image}" alt="${crypto.name}" class="w-16 h-16 mb-4">
+          <h2 class="text-xl font-bold mb-2">${crypto.name}</h2>
+          <p class="text-gray-400 mb-2">${crypto.symbol.toUpperCase()}</p>
+          <p class="text-2xl font-semibold mb-2">$${crypto.current_price.toFixed(2)}</p>
+          <p class="${priceChangeClass}">${priceChange.toFixed(2)}%</p>
+        `;
+
+        cryptoCards.appendChild(card);
+      });
+    }
+
+    function showUpdateStatus() {
+      const status = document.getElementById('updateStatus');
+      status.classList.remove('hidden');
+      setTimeout(() => {
+        status.classList.add('hidden');
+      }, 3000);
+    }
+
+    document.getElementById('updateBtn').addEventListener('click', fetchCryptoData);
+
+    // Carregar dados ao iniciar
+    fetchCryptoData();
+  </script>
+
+</body>
+</html>
